@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CS336 Assignment 4 · 数据构建 (Data) · 深度解读</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+  <script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+  <style>
+    :root {
+      --bg-primary: #0a0e1a;
+      --bg-secondary: #111827;
+      --bg-card: #1a2236;
+      --bg-code: #0d1117;
+      --bg-highlight: rgba(245,158,11,0.08);
+      --border-subtle: rgba(255,255,255,0.06);
+      --border-accent: rgba(245,158,11,0.3);
+      --text-primary: #e2e8f0;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --accent-blue: #3b82f6;
+      --accent-purple: #8b5cf6;
+      --accent-cyan: #06b6d4;
+      --accent-green: #10b981;
+      --accent-orange: #f59e0b;
+      --accent-red: #ef4444;
+      --accent-pink: #ec4899;
+      --gradient-hero: linear-gradient(135deg, #f59e0b 0%, #ef4444 50%, #ec4899 100%);
+      --gradient-warm: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+      --gradient-cool: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+      --shadow-glow: 0 0 40px rgba(245,158,11,0.15);
+      --radius: 16px;
+      --radius-sm: 10px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Inter', 'Noto Sans SC', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.8;
+      font-size: 16px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ========== SCROLLBAR ========== */
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: var(--bg-primary); }
+    ::-webkit-scrollbar-thumb { background: var(--accent-orange); border-radius: 4px; }
+
+    /* ========== NAV ========== */
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 280px;
+      height: 100vh;
+      background: var(--bg-secondary);
+      border-right: 1px solid var(--border-subtle);
+      overflow-y: auto;
+      z-index: 100;
+      padding: 24px 0;
+      transition: transform 0.3s ease;
+    }
+
+    .nav-header {
+      padding: 0 20px 20px;
+      border-bottom: 1px solid var(--border-subtle);
+      margin-bottom: 16px;
+    }
+
+    .nav-header h3 {
+      font-size: 14px;
+      font-weight: 700;
+      background: var(--gradient-hero);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+    }
+
+    .nav a {
+      display: block;
+      padding: 8px 20px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 400;
+      transition: all 0.2s;
+      border-left: 3px solid transparent;
+    }
+
+    .nav a:hover {
+      color: var(--text-primary);
+      background: var(--bg-highlight);
+      border-left-color: var(--accent-orange);
+    }
+
+    .nav a.section-title {
+      font-weight: 600;
+      color: var(--text-primary);
+      font-size: 14px;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .nav a.sub { padding-left: 36px; font-size: 12.5px; }
+
+    /* ========== MAIN ========== */
+    .main {
+      margin-left: 280px;
+      max-width: 900px;
+      padding: 0 48px 120px;
+    }
+
+    /* ========== HERO ========== */
+    .hero {
+      padding: 80px 0 60px;
+      text-align: center;
+      position: relative;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 0; left: -200px; right: -200px;
+      height: 400px;
+      background: radial-gradient(ellipse at center, rgba(245,158,11,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-badge {
+      display: inline-block;
+      padding: 6px 16px;
+      background: rgba(245,158,11,0.15);
+      border: 1px solid rgba(245,158,11,0.3);
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent-orange);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 24px;
+    }
+
+    .hero h1 {
+      font-size: 48px;
+      font-weight: 900;
+      line-height: 1.2;
+      background: var(--gradient-hero);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 16px;
+    }
+
+    .hero .subtitle {
+      font-size: 20px;
+      color: var(--text-secondary);
+      font-weight: 300;
+      max-width: 600px;
+      margin: 0 auto 32px;
+    }
+
+    /* ========== SECTIONS ========== */
+    .section {
+      margin-top: 64px;
+      scroll-margin-top: 32px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .section-num {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 48px;
+      height: 48px;
+      background: var(--gradient-hero);
+      border-radius: 14px;
+      font-size: 20px;
+      font-weight: 800;
+      color: #fff;
+      flex-shrink: 0;
+    }
+
+    .section-header h2 {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .section-header h2 .zh {
+      font-size: 16px;
+      font-weight: 400;
+      color: var(--text-muted);
+      display: block;
+      margin-top: 2px;
+    }
+
+    h3 {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin: 40px 0 16px;
+      padding-left: 16px;
+      border-left: 3px solid var(--accent-orange);
+    }
+
+    /* ========== PROBLEM CARDS ========== */
+    .problem {
+      background: linear-gradient(135deg, rgba(245,158,11,0.06) 0%, rgba(239,68,68,0.04) 100%);
+      border: 1px solid rgba(245,158,11,0.2);
+      border-radius: var(--radius);
+      padding: 28px;
+      margin: 24px 0;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .problem::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 4px; height: 100%;
+      background: var(--gradient-hero);
+    }
+
+    .problem-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .problem-name {
+      font-size: 15px;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--accent-orange);
+    }
+
+    .problem-points {
+      display: inline-block;
+      padding: 4px 12px;
+      background: rgba(16,185,129,0.15);
+      border: 1px solid rgba(16,185,129,0.3);
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent-green);
+    }
+
+    .deliverable {
+      background: rgba(236,72,153,0.08);
+      border: 1px solid rgba(236,72,153,0.2);
+      border-radius: var(--radius-sm);
+      padding: 14px 18px;
+      margin-top: 14px;
+      font-size: 14px;
+    }
+
+    .deliverable::before {
+      content: '📋 交付物';
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent-pink);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+    }
+
+    /* ========== FLOW DIAGRAM ========== */
+    .flow {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin: 24px 0;
+    }
+
+    .flow-step {
+      background: var(--bg-card);
+      border: 1px solid var(--border-accent);
+      border-radius: var(--radius-sm);
+      padding: 12px 18px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-primary);
+      min-width: 120px;
+    }
+
+    .flow-arrow {
+      font-size: 20px;
+      color: var(--accent-orange);
+      padding: 0 4px;
+    }
+  </style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-header">
+    <h3>CS336 · Assignment 4</h3>
+  </div>
+  <a href="#overview" class="section-title">📋 总览 Overview</a>
+  <a href="#extraction" class="section-title">Part 1 · 文本提取与识别</a>
+  <a href="#filter" class="section-title">Part 2 · 内容过滤</a>
+  <a href="#dedup" class="section-title">Part 3 · 数据去重</a>
+  <a href="#pipeline" class="section-title">Part 4 · 完整流水线</a>
+</nav>
+
+<div class="main">
+
+<section class="hero">
+  <div class="hero-badge">Stanford CS336 · Spring 2025</div>
+  <h1>Data Pipeline</h1>
+  <p class="subtitle">构建大模型预训练数据流水线：从 Common Crawl HTML 提取到高质量去重文本</p>
+</section>
+
+<section class="section" id="overview">
+  <div class="section-header">
+    <div class="section-num">📋</div>
+    <h2>Assignment Overview <span class="zh">作业总览</span></h2>
+  </div>
+  <p>在这个作业中，你将构建一个类似于真实大模型（如 GPT-3, LLaMA）预训练数据准备的数据处理流水线。我们将处理来自 Common Crawl 的抓取数据，并应用多种过滤和去重规则来提取高质量的文本数据。</p>
+
+  <div class="flow">
+    <div class="flow-step">HTML 提取</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">语言与质量过滤</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">PII与毒性过滤</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">去重 (MinHash/Exact)</div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">模型训练</div>
+  </div>
+</section>
+
+<section class="section" id="extraction">
+  <div class="section-header">
+    <div class="section-num">1</div>
+    <h2>Extraction & Identification <span class="zh">文本提取与语言识别</span></h2>
+  </div>
+
+  <div class="problem">
+    <div class="problem-head">
+      <span class="problem-name">look_at_cc</span>
+      <span class="problem-points">4 分</span>
+    </div>
+    <p>手动查看一小部分 Common Crawl 数据，了解其原始格式，并标注 25 个文档的语言、领域和类型。</p>
+    <div class="deliverable">简短的观察报告和文档标注。</div>
+  </div>
+
+  <div class="problem">
+    <div class="problem-head">
+      <span class="problem-name">extract_text</span>
+      <span class="problem-points">3 分</span>
+    </div>
+    <p>使用库（如 <code>resiliparse</code> 或 <code>trafilatura</code>）从 HTML 中提取纯文本。你需要与原生的 Common Crawl WET 格式提取结果进行对比。</p>
+    <div class="deliverable">实现提取函数，并分析自定义提取与 WET 原生提取的异同。</div>
+  </div>
+
+  <div class="problem">
+    <div class="problem-head">
+      <span class="problem-name">language_identification</span>
+      <span class="problem-points">6 分</span>
+    </div>
+    <p>使用如 <code>fastText</code> 的预训练模型进行语言识别。你需要过滤出高置信度的英文文档。</p>
+    <div class="deliverable">实现语言检测函数，并报告精度及阈值选择的合理性。</div>
+  </div>
+</section>
+
+<section class="section" id="filter">
+  <div class="section-header">
+    <div class="section-num">2</div>
+    <h2>Content Filtering <span class="zh">内容过滤</span></h2>
+  </div>
+
+  <div class="problem">
+    <div class="problem-head">
+      <span class="problem-name">mask_pii</span>
+      <span class="problem-points">3 分</span>
+    </div>
+    <p>实现正则或特定算法来掩码（脱敏）个人隐私信息 (PII)，包括：Email、电话号码和 IPv4 地址。</p>
+  </div>
+
+  <div class="problem">
+    <div class="problem-head">
+      <span class="problem-name">harmful_content</span>
+      <span class="problem-points">6 分</span>
+    </div>
+    <p>使用规则或小型分类模型来检测和过滤 NSFW（色情）内容以及 Toxic（有毒/仇恨）言论。</p>
+  </div>
+
+  <div class="problem">
+    <div class="problem-head">
+      <span class="problem-name">gopher_quality_filters</span>
+      <span class="problem-points">3 分</span>
+    </div>
+    <p>实现 DeepMind Gopher 论文中提出的启发式质量过滤规则（如词数、行数、特殊字符比例等）。</p>
+  </div>
+
+  <div class="problem">
+    <div class="problem-head">
+      <span class="problem-name">quality_classifier</span>
+      <span class="problem-points">15 分 ⭐</span>
+    </div>
+    <p>训练一个质量分类器（例如使用 <code>fastText</code>），以 Wikipedia 等高质量语料为正样本，未过滤的 CC 数据为负样本，预测文档的质量得分。</p>
+    <div class="deliverable">质量分类器实现。</div>
+  </div>
+</section>
+
+<section class="section" id="dedup">
+  <div class="section-header">
+    <div class="section-num">3</div>
+    <h2>Deduplication <span class="zh">数据去重</span></h2>
+  </div>
+
+  <div class="problem">
+    <div class="problem-head">
+      <span class="problem-name">exact_deduplication</span>
+      <span class="problem-points">3 分</span>
+    </div>
+    <p>实现精确的行级去重算法。避免在不同文档中重复出现完全相同的行（如导航栏、版权声明）。</p>
+  </div>
+
+  <div class="problem">
+    <div class="problem-head">
+      <span class="problem-name">minhash_deduplication</span>
+      <span class="problem-points">8 分 ⭐</span>
+    </div>
+    <p>实现基于 MinHash 和 LSH (Locality-Sensitive Hashing) 的文档级模糊去重，剔除高 Jaccard 相似度的文档。</p>
+  </div>
+</section>
+
+<section class="section" id="pipeline">
+  <div class="section-header">
+    <div class="section-num">4</div>
+    <h2>End-to-End Pipeline <span class="zh">完整流水线</span></h2>
+  </div>
+
+  <div class="problem">
+    <div class="problem-head">
+      <span class="problem-name">filter_data</span>
+      <span class="problem-points">6 分</span>
+    </div>
+    <p>将上述所有模块组装成一个可以并行处理大量 CC WET 文件的流水线脚本。</p>
+    <div class="deliverable">过滤脚本与运行时长报告。</div>
+  </div>
+
+  <div class="problem">
+    <div class="problem-head">
+      <span class="problem-name">inspect_filtered_data</span>
+      <span class="problem-points">4 分</span>
+    </div>
+    <p>人工抽样检查过滤后保留的文档和被丢弃的文档，验证流水线的效果。</p>
+  </div>
+
+  <div class="problem">
+    <div class="problem-head">
+      <span class="problem-name">tokenize_data & train_model</span>
+      <span class="problem-points">4 分</span>
+    </div>
+    <p>对过滤后的高质量语料进行 Tokenize，并训练一个语言模型（复用 Assignment 1 的模型架构）。</p>
+    <div class="deliverable">最佳验证集 Loss 和学习曲线。</div>
+  </div>
+</section>
+
+</div>
+</body>
+</html>
